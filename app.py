@@ -978,12 +978,24 @@ def api_atendimento():
     return resp
 
 
+def _token_do_leitor_ok():
+    token = (request.headers.get("Authorization") or "").replace("Bearer", "").strip()
+    certo = cfg("leitor_token")
+    return bool(token and certo and secrets.compare_digest(token, certo))
+
+
+@app.route("/api/atendimento/verificar")
+def api_atendimento_verificar():
+    """Usado pelo instalador do leitor para testar o token (não altera nada)."""
+    if not _token_do_leitor_ok():
+        return jsonify({"erro": "token inválido"}), 401
+    return jsonify({"ok": True})
+
+
 @app.route("/api/atendimento/push", methods=["POST"])
 def api_atendimento_push():
     """Recebe os dados do leitor_messenger.py que roda no PC do escritório."""
-    token = (request.headers.get("Authorization") or "").replace("Bearer", "").strip()
-    certo = cfg("leitor_token")
-    if not token or not certo or not secrets.compare_digest(token, certo):
+    if not _token_do_leitor_ok():
         return jsonify({"erro": "token inválido"}), 401
     dados = request.get_json(silent=True)
     if not isinstance(dados, dict):
@@ -1395,7 +1407,106 @@ def api_admin_atendimento():
     d = atendimento_ler()
     idade = int(time.time() - float(d.get("recebido_ts") or 0)) if d else None
     return jsonify({"tv": atendimento_para_tv(), "ultimo_contato_s": idade,
-                    "token": cfg("leitor_token"), "url_push": request.host_url.rstrip("/")})
+                    "token": cfg("leitor_token"), "url_push": _endereco_publico()})
+
+
+LEITOR_DIR = BASE_DIR / "leitor_local"
+LEITOR_ARQUIVOS = ("INSTALAR.bat", "instalador.ps1", "COMO INSTALAR.txt", "leitor_messenger.py",
+                   "config.ini", "iniciar_leitor.bat", "login_messenger.bat", "instalar.bat")
+
+
+def _endereco_publico():
+    """Endereço do painel como o leitor deve usar (https quando há proxy na frente)."""
+    url = request.host_url.rstrip("/")
+    https_na_frente = (request.headers.get("X-Forwarded-Proto", "").lower() == "https"
+                       or request.host.endswith(".pythonanywhere.com"))
+    if url.startswith("http://") and https_na_frente:
+        url = "https://" + url[len("http://"):]
+    return url
+
+
+@app.route("/admin/leitor/instalador.zip")
+@login_obrigatorio
+def leitor_baixar_instalador():
+    """Zip do leitor do Messenger já com o endereço e o token deste painel."""
+    import zipfile
+    if not (LEITOR_DIR / "leitor_messenger.py").exists():
+        return ("A pasta leitor_local não está neste servidor. Envie a pasta leitor_local "
+                "junto com o app.py para liberar o download do instalador."), 404
+    url, token = _endereco_publico(), cfg("leitor_token")
+    buf = BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for nome in LEITOR_ARQUIVOS:
+            arq = LEITOR_DIR / nome
+            if not arq.exists():
+                continue
+            if nome == "config.ini":
+                conteudo = arq.read_text(encoding="utf-8-sig")
+                conteudo = re.sub(r"(?m)^url\s*=.*$", "url   = " + url, conteudo, count=1)
+                conteudo = re.sub(r"(?m)^token\s*=.*$", "token = " + token, conteudo, count=1)
+                z.writestr("LeitorMessenger/config.ini", "\ufeff" + conteudo)
+            else:
+                z.write(arq, "LeitorMessenger/" + nome)
+    buf.seek(0)
+    resp = send_file(buf, as_attachment=True, download_name="LeitorMessenger.zip", mimetype="application/zip")
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
+LEITOR_EXE = LEITOR_DIR / "dist" / "InstalarLeitorMessenger.exe"
+
+
+@app.route("/admin/leitor/instalador.exe")
+@login_obrigatorio
+def leitor_baixar_exe():
+    """Instalador .exe do leitor com o endereço e o token deste painel no fim do arquivo.
+    O .exe lê esse trecho ao rodar (leitor_local/instalador_exe/main.go)."""
+    import base64
+    if not LEITOR_EXE.exists():
+        return ("O arquivo leitor_local/dist/InstalarLeitorMessenger.exe não está neste servidor. "
+                "Envie a pasta leitor_local junto com o app.py."), 404
+    cfg_json = json.dumps({"url": _endereco_publico(), "token": cfg("leitor_token")})
+    trailer = b"\nLEITORCFG1:" + base64.b64encode(cfg_json.encode("utf-8")) + b":FIM\n"
+    buf = BytesIO(LEITOR_EXE.read_bytes() + trailer)
+    resp = send_file(buf, as_attachment=True, download_name="InstalarLeitorMessenger.exe",
+                     mimetype="application/vnd.microsoft.portable-executable")
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
+EXTENSAO_DIR = BASE_DIR / "leitor_extensao"
+EXTENSAO_ARQUIVOS = ("manifest.json", "background.js", "conteudo.js", "opcoes.html", "opcoes.js",
+                     "config.js", "COMO INSTALAR.txt")
+
+
+@app.route("/admin/leitor/extensao.zip")
+@login_obrigatorio
+def leitor_baixar_extensao():
+    """Extensão do Chrome que lê o Messenger no navegador do atendente,
+    já com o endereço e o token deste painel."""
+    import zipfile
+    if not (EXTENSAO_DIR / "manifest.json").exists():
+        return "A pasta leitor_extensao não está neste servidor. Envie-a junto com o app.py.", 404
+    url, token = _endereco_publico(), cfg("leitor_token")
+    buf = BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for nome in EXTENSAO_ARQUIVOS:
+            arq = EXTENSAO_DIR / nome
+            if not arq.exists():
+                continue
+            destino = "LeitorMessengerChrome/" + nome
+            if nome == "config.js":
+                z.writestr(destino, "self.PAINEL_CONFIG = " + json.dumps({"url": url, "token": token}) + ";\n")
+            elif nome == "manifest.json":
+                manifesto = json.loads(arq.read_text(encoding="utf-8"))
+                manifesto["host_permissions"] = ["https://app.gestta.com.br/*", url + "/*"]
+                z.writestr(destino, json.dumps(manifesto, ensure_ascii=False, indent=2))
+            else:
+                z.write(arq, destino)
+    buf.seek(0)
+    resp = send_file(buf, as_attachment=True, download_name="LeitorMessengerChrome.zip", mimetype="application/zip")
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
 
 
 CHAVES_EDITAVEIS = {"empresa_titulo", "empresa_subtitulo", "rodape", "tempo_imagem", "mostrar_atendimento",

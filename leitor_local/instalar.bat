@@ -1,5 +1,5 @@
 @echo off
-REM Instala o que o leitor precisa (rodar UMA vez neste PC)
+REM Instalacao manual (antiga). Prefira o INSTALAR.bat, que faz tudo sozinho.
 cd /d "%~dp0"
 python -m pip install --upgrade playwright
 python -m playwright install chromium
