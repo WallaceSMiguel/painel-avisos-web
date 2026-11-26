@@ -19,7 +19,8 @@
       pendentes_badge: numeroDaAba(abaPend, "Pendentes"),
       em_atendimento: numeroDaAba(abaAtend, "Em atendimento"),
       aba_pendentes_aberta: /active-true/.test(abaPend.className),
-      itens: []
+      itens: [],
+      diagnostico: []
     };
     // com outra aba aberta (ex.: Em atendimento) a lista mostrada não é a de
     // pendentes: manda só os números e o painel mantém os últimos nomes
@@ -36,10 +37,16 @@
         }
       }
     }
-    if (!lista) return resultado;
+    if (!lista) { resultado.diagnostico.push({ erro: "lista de conversas não encontrada" }); return resultado; }
 
     const ehTelefone = t => /^\+?[\d\s()\-]{8,}$/.test(t);
     const ehFrase = t => t.length > 60 || /solicitou|atendimento|aguarde/i.test(t);
+    // textos que nunca são o nome: hora, tempo de espera, departamento, contadores, prévias
+    const naoEhNome = t => !t || ehTelefone(t) || ehFrase(t) ||
+      /^\d{1,2}:\d{2}$/.test(t) || /^\d+$/.test(t) ||
+      /^(h[aá]\s|poucos segundos|agora|ontem|hoje)/i.test(t) ||
+      /^\d+\s*(min|h|s|dia)/i.test(t) ||
+      /departamento|depto/i.test(t) || /^(voc[eê]|cliente):/i.test(t) || t === "--";
     const semTelefone = t => t.replace(/\s*\(\+?\d[\d\s()\-]{7,}\)\s*$/, "").trim();
 
     let trilho = null;
@@ -57,18 +64,27 @@
       const titulos = Array.from(bloco.querySelectorAll("[title]"))
         .map(el => (el.getAttribute("title") || "").trim())
         .filter(t => t && t !== "--");
+      // a foto do contato costuma ter o nome no alt / aria-label
+      const rotulos = Array.from(bloco.querySelectorAll("img[alt], [aria-label]"))
+        .map(el => (el.getAttribute("alt") || el.getAttribute("aria-label") || "").trim())
+        .filter(Boolean);
+      // textContent pega o nome mesmo quando o innerText vem vazio (aba em segundo plano)
+      const folhas = Array.from(bloco.querySelectorAll("*"))
+        .filter(el => !el.children.length)
+        .map(el => (el.textContent || "").trim())
+        .filter(Boolean);
 
       let nome = "";
-      for (const t of titulos) {
-        if (!ehTelefone(t) && !ehFrase(t)) { nome = semTelefone(t); break; }
+      for (const t of titulos.concat(linhas, folhas, rotulos)) {
+        const limpo = semTelefone(t);
+        if (!naoEhNome(t) && limpo && !naoEhNome(limpo)) { nome = limpo; break; }
       }
-      if (!nome) nome = semTelefone(linhas.find(l => !ehTelefone(l) && !ehFrase(l)) || "");
 
       const hora = (texto.match(/\b\d{1,2}:\d{2}\b/) || [""])[0];
 
       const vistos = {};
       const textos = [];
-      titulos.concat(linhas).forEach(t => {
+      titulos.concat(linhas, folhas, rotulos).forEach(t => {
         if (!t || vistos[t] || ehTelefone(t)) return;
         vistos[t] = true;
         textos.push(t.replace(/\(\+?\d[\d\s()\-]{7,}\)/g, "").trim().slice(0, 220));
@@ -91,6 +107,10 @@
       });
 
       resultado.itens.push({ nome, hora, departamento, textos: textos.slice(0, 15) });
+      if (resultado.diagnostico.length < 3) {
+        resultado.diagnostico.push({ nome, titulos, rotulos, linhas: linhas.slice(0, 12),
+                                     folhas: folhas.slice(0, 20), html: bloco.outerHTML.slice(0, 4000) });
+      }
     }
     return resultado;
   }

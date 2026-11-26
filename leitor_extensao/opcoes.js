@@ -23,3 +23,11 @@ $("salvar").addEventListener("click", async () => {
 
 chrome.storage.onChanged.addListener(carregar);
 carregar();
+
+$("diag").addEventListener("click", async () => {
+  const { diagnostico } = await chrome.storage.local.get("diagnostico");
+  const texto = diagnostico ? JSON.stringify(diagnostico, null, 1)
+    : "Sem diagnóstico ainda: abra a aba Pendentes do Messenger e espere 30 segundos.";
+  await navigator.clipboard.writeText(texto);
+  $("diag").textContent = diagnostico ? "Copiado! Cole no chat do suporte." : "Ainda sem dados";
+});
