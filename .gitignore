@@ -1,0 +1,6 @@
+dados/
+.env
+__pycache__/
+*.pyc
+leitor_local/perfil_messenger/
+leitor_local/dados/

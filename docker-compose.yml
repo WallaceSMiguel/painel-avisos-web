@@ -1,0 +1,33 @@
+# Sobe o painel + Caddy (HTTPS automático com Let's Encrypt).
+#   1) copie .env.exemplo para .env e preencha
+#   2) aponte o DNS do seu domínio para o IP do servidor
+#   3) docker compose up -d --build
+services:
+  painel:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      COOKIE_SEGURO: "sim"
+    volumes:
+      - ./dados:/dados
+    expose:
+      - "8000"
+
+  caddy:
+    image: caddy:2.8
+    restart: unless-stopped
+    depends_on: [painel]
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMINIO: ${DOMINIO}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_dados:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_dados:
+  caddy_config:

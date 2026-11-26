@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>Entrar | Painel de Avisos</title>
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/static/admin/admin.css">
+</head>
+<body>
+<main class="login-pagina">
+    <div class="login-caixa">
+        <div class="login-marca">
+            <img src="/static/img/logo-cubo.png" alt="">
+            <div>
+                <div class="marca-nome">Valorização</div>
+                <div class="marca-sub" style="text-align:center">Assessoria Contábil</div>
+            </div>
+        </div>
+        <form class="card" method="post" autocomplete="on">
+            <h1 style="margin:0 0 4px;font-size:20px">Painel de Avisos</h1>
+            <p class="muted" style="margin:0 0 22px;font-size:14px">Entre para gerenciar avisos, vídeos e a agenda das salas.</p>
+            {% if erro %}<div class="login-erro" role="alert"><i class="fa-solid fa-circle-exclamation"></i> {{ erro }}</div>{% endif %}
+            <div class="campo">
+                <label for="login">Usuário</label>
+                <input class="input" id="login" name="login" autocomplete="username" autocapitalize="none" required autofocus>
+            </div>
+            <div class="campo">
+                <label for="senha">Senha</label>
+                <input class="input" id="senha" name="senha" type="password" autocomplete="current-password" required>
+            </div>
+            <button class="btn btn-prim" style="width:100%;padding:12px" type="submit">
+                <i class="fa-solid fa-right-to-bracket"></i> Entrar
+            </button>
+        </form>
+        <div class="login-rodape">Valorização Assessoria Contábil · Departamento de TI</div>
+    </div>
+</main>
+</body>
+</html>

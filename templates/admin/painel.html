@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="csrf" content="{{ csrf }}">
+    <title>Administração | Painel de Avisos</title>
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/static/admin/admin.css">
+</head>
+<body>
+<div class="app">
+
+    <!-- ================= MENU ================= -->
+    <aside class="sidebar">
+        <div class="marca">
+            <img src="/static/img/logo-cubo.png" alt="">
+            <div>
+                <div class="marca-nome">Valorização</div>
+                <div class="marca-sub">Assessoria Contábil</div>
+            </div>
+        </div>
+        <nav class="nav" aria-label="Seções">
+            <a href="#inicio" data-secao="inicio"><i class="fa-solid fa-gauge-high"></i><span>Visão geral</span></a>
+            <a href="#avisos" data-secao="avisos"><i class="fa-solid fa-photo-film"></i><span>Avisos</span><b class="contador" id="navProcessando"></b></a>
+            <a href="#agenda" data-secao="agenda"><i class="fa-solid fa-calendar-days"></i><span>Agenda</span></a>
+            <a href="#atendimento" data-secao="atendimento"><i class="fa-solid fa-headset"></i><span>Atendimento</span><b class="contador" id="navPendentes"></b></a>
+            <a href="#config" data-secao="config"><i class="fa-solid fa-sliders"></i><span>Configurações</span></a>
+        </nav>
+        <div class="sidebar-rodape">
+            <div class="usuario">
+                <div class="avatar" id="avatar">{{ (usuario or 'A')[:1]|upper }}</div>
+                <div>
+                    <div class="usuario-nome">{{ usuario }}</div>
+                    <a href="/admin/sair"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="conteudo">
+
+        <!-- ================= VISÃO GERAL ================= -->
+        <section class="secao" id="sec-inicio">
+            <div class="topo">
+                <div>
+                    <h1>Visão geral</h1>
+                    <p>O que está passando agora nas TVs</p>
+                </div>
+                <div class="acoes">
+                    <a class="btn" href="/" target="_blank" rel="noopener"><i class="fa-solid fa-tv"></i> Abrir tela da TV</a>
+                    <a class="btn btn-prim" href="#avisos"><i class="fa-solid fa-plus"></i> Novo aviso</a>
+                </div>
+            </div>
+
+            <div class="grade grade-4">
+                <div class="card kpi"><div class="kpi-icone"><i class="fa-solid fa-tower-broadcast"></i></div>
+                    <div><div class="kpi-valor" id="kAvisos">–</div><div class="kpi-rotulo">avisos no ar</div></div></div>
+                <div class="card kpi"><div class="kpi-icone"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div><div class="kpi-valor" id="kReunioes">–</div><div class="kpi-rotulo">reuniões hoje</div></div></div>
+                <div class="card kpi" id="kAtendCard"><div class="kpi-icone"><i class="fa-solid fa-user-clock"></i></div>
+                    <div><div class="kpi-valor" id="kAtend">–</div><div class="kpi-rotulo" id="kAtendRot">clientes aguardando</div></div></div>
+                <div class="card kpi"><div class="kpi-icone"><i class="fa-solid fa-hard-drive"></i></div>
+                    <div><div class="kpi-valor" id="kEspaco" style="font-size:22px">–</div><div class="kpi-rotulo">em vídeos e imagens</div></div></div>
+            </div>
+
+            <div class="grade grade-2 mt">
+                <div class="card">
+                    <div class="card-cab">
+                        <div class="icone-cab"><i class="fa-solid fa-tv"></i></div>
+                        <div><h2>Prévia ao vivo</h2><div class="sub">Igual ao que aparece na TV</div></div>
+                        <div class="dir"><button class="btn btn-peq" id="btnRecarregarPrevia" type="button"><i class="fa-solid fa-rotate"></i> Recarregar</button></div>
+                    </div>
+                    <div class="card-corpo">
+                        <div class="tv-moldura" id="tvMoldura"><iframe id="tvPrevia" title="Prévia da TV" tabindex="-1"></iframe></div>
+                    </div>
+                </div>
+                <div class="grade">
+                    <div class="card">
+                        <div class="card-cab">
+                            <div class="icone-cab"><i class="fa-solid fa-calendar-days"></i></div>
+                            <div><h2>Próximas reuniões</h2><div class="sub" id="inicioAgendaInfo">&nbsp;</div></div>
+                        </div>
+                        <div id="inicioProximas"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-cab">
+                            <div class="icone-cab"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                            <div><h2>Últimas alterações</h2></div>
+                        </div>
+                        <div class="card-corpo" style="padding-top:6px;padding-bottom:6px"><ul class="historico" id="inicioHistorico"></ul></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= AVISOS ================= -->
+        <section class="secao" id="sec-avisos">
+            <div class="topo">
+                <div>
+                    <h1>Avisos</h1>
+                    <p>Imagens e vídeos do carrossel e do aviso em destaque</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-cab">
+                    <div class="icone-cab"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                    <div><h2>Enviar novos avisos</h2><div class="sub">Entram no ar assim que terminam de enviar{% if ffmpeg %} (vídeos são ajustados automaticamente para a TV){% endif %}</div></div>
+                    <div class="dir">
+                        <span class="muted" style="font-size:13px">Exibir em:</span>
+                        <div class="segmentado" role="radiogroup" aria-label="Onde exibir">
+                            <label><input type="radio" name="posicaoEnvio" value="carrossel" checked><span><i class="fa-solid fa-film"></i> Carrossel</span></label>
+                            <label><input type="radio" name="posicaoEnvio" value="destaque"><span><i class="fa-solid fa-star"></i> Destaque</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-corpo">
+                    <label class="soltar" id="soltarAvisos">
+                        <input type="file" id="arquivoAvisos" multiple accept="image/*,video/*,.mkv,.avi,.wmv,.mov">
+                        <i class="fa-solid fa-photo-film grande"></i>
+                        <b>Arraste imagens ou vídeos para cá</b>
+                        <small>ou clique para escolher · JPG, PNG, GIF, WEBP, MP4, MOV, MKV, AVI · até {{ max_upload_mb }} MB por arquivo</small>
+                    </label>
+                    <div class="envios" id="envios"></div>
+                </div>
+            </div>
+
+            <div class="card mt">
+                <div class="card-cab">
+                    <div class="icone-cab"><i class="fa-solid fa-layer-group"></i></div>
+                    <div><h2>Avisos cadastrados</h2><div class="sub">Arraste <i class="fa-solid fa-grip-vertical"></i> para mudar a ordem na TV</div></div>
+                    <div class="dir filtros" role="radiogroup" aria-label="Filtro">
+                        <div class="segmentado">
+                            <label><input type="radio" name="filtroAvisos" value="todos" checked><span>Todos <b id="fTodos"></b></span></label>
+                            <label><input type="radio" name="filtroAvisos" value="no_ar"><span>No ar <b id="fNoAr"></b></span></label>
+                            <label><input type="radio" name="filtroAvisos" value="fora"><span>Fora do ar <b id="fFora"></b></span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="lista-avisos" id="listaAvisos"></div>
+            </div>
+        </section>
+
+        <!-- ================= AGENDA ================= -->
+        <section class="secao" id="sec-agenda">
+            <div class="topo">
+                <div>
+                    <h1>Agenda das salas</h1>
+                    <p>Envie a planilha e a agenda muda na TV na hora</p>
+                </div>
+                <div class="acoes">
+                    <a class="btn" href="/admin/agenda/modelo.xlsx"><i class="fa-solid fa-file-arrow-down"></i> Baixar modelo</a>
+                    <a class="btn" href="/admin/agenda/atual.xlsx" id="btnBaixarAgenda"><i class="fa-solid fa-file-excel"></i> Planilha atual</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-cab">
+                    <div class="icone-cab"><i class="fa-solid fa-file-excel"></i></div>
+                    <div><h2>Atualizar agenda</h2><div class="sub">A mesma planilha de antes (aba <b>Salas</b>) funciona aqui</div></div>
+                </div>
+                <div class="card-corpo">
+                    <label class="soltar" id="soltarAgenda">
+                        <input type="file" id="arquivoAgenda" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                        <i class="fa-solid fa-table grande"></i>
+                        <b>Arraste a planilha da agenda (.xlsx) para cá</b>
+                        <small>Colunas: Sala · Status · Responsável · Data · Hora Inicial · Hora Final</small>
+                    </label>
+                    <div class="envios" id="enviosAgenda"></div>
+                    <div id="agendaAlertas"></div>
+                </div>
+            </div>
+
+            <div class="card mt">
+                <div class="card-cab">
+                    <div class="icone-cab"><i class="fa-solid fa-list"></i></div>
+                    <div><h2>Reuniões na TV <span class="muted" id="agendaTotal"></span></h2><div class="sub info-linha" id="agendaInfo"></div></div>
+                    <div class="dir"><button class="btn btn-peq btn-perigo" id="btnLimparAgenda" type="button"><i class="fa-solid fa-eraser"></i> Limpar agenda</button></div>
+                </div>
+                <div class="tabela-rolagem" id="agendaTabela"></div>
+            </div>
+        </section>
+
+        <!-- ================= ATENDIMENTO ================= -->
+        <section class="secao" id="sec-atendimento">
+            <div class="topo">
+                <div>
+                    <h1>Atendimento · Messenger</h1>
+                    <p>Clientes aguardando no Onvio Messenger, em tempo real na TV</p>
+                </div>
+            </div>
+            <div class="grade grade-2b">
+                <div class="card">
+                    <div class="card-cab">
+                        <div class="icone-cab"><i class="fa-solid fa-headset"></i></div>
+                        <div><h2>Agora</h2><div class="sub" id="atendContato">&nbsp;</div></div>
+                        <div class="dir"><span class="ao-vivo" id="atendSelo">—</span></div>
+                    </div>
+                    <div class="card-corpo" id="atendAgora"></div>
+                </div>
+                <div class="card">
+                    <div class="card-cab">
+                        <div class="icone-cab"><i class="fa-solid fa-sliders"></i></div>
+                        <div><h2>Card na TV</h2></div>
+                    </div>
+                    <div class="card-corpo">
+                        <div class="opcao">
+                            <div class="opcao-texto"><b>Mostrar o card de atendimento</b><small>Desligado, a agenda ocupa toda a coluna da TV</small></div>
+                            <label class="chave"><input type="checkbox" data-config="mostrar_atendimento"><span></span></label>
+                        </div>
+                        <div class="opcao">
+                            <div class="opcao-texto"><b>Clientes listados no card</b><small>Os demais aparecem como “+ N aguardando”</small></div>
+                            <input class="input" style="width:84px" type="number" min="1" max="8" data-config="max_clientes_card">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card mt" id="cardAlerta">
+                <div class="card-cab">
+                    <div class="icone-cab"><i class="fa-solid fa-bell"></i></div>
+                    <div><h2>Alerta de novo atendimento</h2><div class="sub">Quando um cliente entra na fila, a TV toca um sinal curto, mostra um card no meio da tela e pode falar o nome dele</div></div>
+                    <div class="dir"><label class="chave" title="Ligar/desligar o alerta"><input type="checkbox" data-config="alerta_ativo"><span></span></label></div>
+                </div>
+                <div class="card-corpo grade grade-2b" id="alertaOpcoes">
+                    <div>
+                        <div class="opcao">
+                            <div class="opcao-texto"><b><i class="fa-solid fa-window-maximize" style="color:var(--brand-2);margin-right:6px"></i>Card no meio da tela</b><small>Nome, departamento e tempo de espera em destaque</small></div>
+                            <label class="chave"><input type="checkbox" data-config="alerta_card"><span></span></label>
+                        </div>
+                        <div class="opcao">
+                            <div class="opcao-texto"><b><i class="fa-solid fa-music" style="color:var(--brand-2);margin-right:6px"></i>Sinal sonoro</b><small>Dois toques suaves, cerca de 1 segundo</small></div>
+                            <label class="chave"><input type="checkbox" data-config="alerta_som"><span></span></label>
+                        </div>
+                        <div class="opcao">
+                            <div class="opcao-texto"><b><i class="fa-solid fa-comment-dots" style="color:var(--brand-2);margin-right:6px"></i>Falar o nome do cliente</b><small>“Atenção. Cliente Maraca Tintas aguardando atendimento, departamento Fiscal.”</small></div>
+                            <label class="chave"><input type="checkbox" data-config="alerta_voz"><span></span></label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="campo"><label for="aVolume">Volume <span class="muted" id="aVolumeTxt"></span></label>
+                            <input id="aVolume" type="range" min="5" max="100" step="5" data-config="alerta_volume" data-auto style="accent-color:var(--brand);width:100%"></div>
+                        <div class="linha-campos">
+                            <div class="campo"><label for="aDuracao">Card na tela (segundos)</label><input class="input" id="aDuracao" type="number" min="4" max="120" data-config="alerta_duracao" data-auto></div>
+                            <div class="campo"><label for="aRepetir">Lembrar se continuar esperando</label>
+                                <select class="input" id="aRepetir" data-config="alerta_repetir_min" data-auto>
+                                    <option value="0">Não lembrar</option>
+                                    <option value="5">A cada 5 min</option>
+                                    <option value="10">A cada 10 min</option>
+                                    <option value="15">A cada 15 min</option>
+                                    <option value="30">A cada 30 min</option>
+                                </select></div>
+                        </div>
+                        <div class="flex">
+                            <button class="btn" id="btnOuvirAqui" type="button"><i class="fa-solid fa-headphones"></i> Ouvir aqui</button>
+                            <button class="btn btn-prim" id="btnTestarTv" type="button"><i class="fa-solid fa-tv"></i> Testar nas TVs</button>
+                        </div>
+                        <p class="muted" style="font-size:12.5px;margin:12px 0 0">A TV só toca som depois de um primeiro toque na tela ou um OK no controle. Até lá, aparece um aviso discreto no canto da TV.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card mt">
+                <div class="card-cab">
+                    <div class="icone-cab"><i class="fa-solid fa-plug"></i></div>
+                    <div><h2>Ligar o leitor do Messenger a este servidor</h2><div class="sub">O leitor continua no PC do escritório (é ele que faz o login no Onvio) e envia os dados para cá</div></div>
+                </div>
+                <div class="card-corpo grade grade-2b">
+                    <div>
+                        <div class="campo"><label>Endereço do servidor</label><div class="codigo"><span id="pushUrl"></span><button class="btn btn-peq btn-fantasma" data-copiar="pushUrl" type="button"><i class="fa-regular fa-copy"></i></button></div></div>
+                        <div class="campo"><label>Token do leitor</label><div class="codigo"><span id="pushToken">••••••••</span>
+                            <button class="btn btn-peq btn-fantasma" id="btnVerToken" type="button" aria-label="Mostrar"><i class="fa-regular fa-eye"></i></button>
+                            <button class="btn btn-peq btn-fantasma" data-copiar="pushToken" type="button"><i class="fa-regular fa-copy"></i></button></div>
+                            <span class="ajuda">Quem tiver este token consegue alterar o card. Se vazar, gere outro.</span></div>
+                        <button class="btn btn-peq btn-perigo" id="btnNovoToken" type="button"><i class="fa-solid fa-arrows-rotate"></i> Gerar novo token</button>
+                    </div>
+                    <div>
+                        <ol class="passos">
+                            <li>No PC do escritório, abra a pasta <code>leitor_local</code> e edite o <code>config.ini</code>.</li>
+                            <li>Na seção <code>[servidor]</code>, cole o endereço e o token:
+<pre class="bloco" id="iniExemplo">[servidor]
+url   = https://seu-endereco
+token = SEU_TOKEN</pre></li>
+                            <li>Rode <code>login_messenger.bat</code> (uma vez) e depois <code>iniciar_leitor.bat</code>.</li>
+                            <li>Em até 30 segundos o selo acima fica <b style="color:var(--ok)">AO VIVO</b>.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CONFIGURAÇÕES ================= -->
+        <section class="secao" id="sec-config">
+            <div class="topo">
+                <div>
+                    <h1>Configurações</h1>
+                    <p>Textos da TV, acesso e usuários</p>
+                </div>
+            </div>
+            <div class="grade grade-2b">
+                <div class="card">
+                    <div class="card-cab"><div class="icone-cab"><i class="fa-solid fa-tv"></i></div><div><h2>Tela da TV</h2></div></div>
+                    <div class="card-corpo">
+                        <div class="linha-campos">
+                            <div class="campo"><label for="cTitulo">Nome no topo</label><input class="input" id="cTitulo" data-config="empresa_titulo" maxlength="60"></div>
+                            <div class="campo"><label for="cSub">Linha abaixo do nome</label><input class="input" id="cSub" data-config="empresa_subtitulo" maxlength="60"></div>
+                        </div>
+                        <div class="campo"><label for="cRodape">Rodapé</label><input class="input" id="cRodape" data-config="rodape" maxlength="200"></div>
+                        <div class="campo"><label for="cTempo">Tempo padrão de cada imagem (segundos)</label><input class="input" id="cTempo" type="number" min="3" max="600" data-config="tempo_imagem" style="max-width:140px"><span class="ajuda">Vídeos passam até o fim. Cada aviso pode ter um tempo próprio.</span></div>
+                        <div class="opcao">
+                            <div class="opcao-texto"><b>Esconder reuniões de dias passados</b><small>Desligado, elas aparecem apagadas no fim da lista</small></div>
+                            <label class="chave"><input type="checkbox" data-config="ocultar_reunioes_passadas"><span></span></label>
+                        </div>
+                        <div class="flex mt"><button class="btn btn-prim" id="btnSalvarConfig" type="button"><i class="fa-solid fa-floppy-disk"></i> Salvar</button><span class="muted" style="font-size:13px">A TV atualiza sozinha em poucos segundos.</span></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-cab"><div class="icone-cab"><i class="fa-solid fa-link"></i></div><div><h2>Endereço da TV</h2><div class="sub">Abra este endereço no navegador de cada TV</div></div></div>
+                    <div class="card-corpo">
+                        <div class="codigo"><span id="tvUrl"></span><button class="btn btn-peq btn-fantasma" data-copiar="tvUrl" type="button"><i class="fa-regular fa-copy"></i></button></div>
+                        <div class="opcao mt">
+                            <div class="opcao-texto"><b>Exigir chave de acesso</b><small id="chaveExplic">Sem chave, qualquer pessoa com o endereço vê a tela (inclusive os nomes dos clientes do Messenger).</small></div>
+                            <label class="chave"><input type="checkbox" id="chkChaveTv"><span></span></label>
+                        </div>
+                        <button class="btn btn-peq mt oculto" id="btnNovaChave" type="button"><i class="fa-solid fa-arrows-rotate"></i> Gerar nova chave (as TVs precisarão do novo endereço)</button>
+                        <p class="muted" style="font-size:13px;margin:14px 0 0">Diagnóstico de vídeo na TV: acrescente <code>?debug=1</code> ao endereço.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="grade grade-2b mt">
+                <div class="card">
+                    <div class="card-cab"><div class="icone-cab"><i class="fa-solid fa-users"></i></div><div><h2>Usuários do painel</h2></div></div>
+                    <div class="tabela-rolagem" id="listaUsuarios"></div>
+                    <div class="card-corpo" style="border-top:1px solid var(--border)">
+                        <div class="linha-campos">
+                            <div class="campo"><label for="uNome">Nome</label><input class="input" id="uNome" maxlength="80" placeholder="Maria Souza"></div>
+                            <div class="campo"><label for="uLogin">Usuário</label><input class="input" id="uLogin" maxlength="40" placeholder="maria" autocapitalize="none"></div>
+                        </div>
+                        <div class="campo"><label for="uSenha">Senha (mín. 8 caracteres)</label><input class="input" id="uSenha" type="password" autocomplete="new-password"></div>
+                        <button class="btn" id="btnAddUsuario" type="button"><i class="fa-solid fa-user-plus"></i> Adicionar usuário</button>
+                    </div>
+                </div>
+                <div class="grade">
+                    <div class="card">
+                        <div class="card-cab"><div class="icone-cab"><i class="fa-solid fa-key"></i></div><div><h2>Trocar minha senha</h2></div></div>
+                        <div class="card-corpo">
+                            <div class="campo"><label for="sAtual">Senha atual</label><input class="input" id="sAtual" type="password" autocomplete="current-password"></div>
+                            <div class="campo"><label for="sNova">Nova senha</label><input class="input" id="sNova" type="password" autocomplete="new-password"></div>
+                            <button class="btn" id="btnTrocarSenha" type="button"><i class="fa-solid fa-check"></i> Trocar senha</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-cab"><div class="icone-cab"><i class="fa-solid fa-clock-rotate-left"></i></div><div><h2>Histórico</h2></div></div>
+                        <div class="card-corpo" style="max-height:320px;overflow:auto;padding-top:6px"><ul class="historico" id="historicoCompleto"></ul></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- ================= MODAL: editar aviso ================= -->
+<div class="modal-fundo" id="modalAviso" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <div class="modal">
+        <div class="modal-cab">
+            <h3 id="modalTitulo">Editar aviso</h3>
+            <button class="btn btn-icone btn-fantasma" data-fechar type="button" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-corpo">
+            <div class="previa-midia" id="mPrevia"></div>
+            <div class="campo"><label for="mTitulo">Título (aparece sobre a imagem)</label><input class="input" id="mTitulo" maxlength="200" placeholder="Opcional"></div>
+            <div class="campo"><label for="mDescricao">Texto</label><textarea class="input" id="mDescricao" maxlength="1000" placeholder="Opcional"></textarea></div>
+            <div class="linha-campos">
+                <div class="campo"><label>Onde exibir</label>
+                    <div class="segmentado">
+                        <label><input type="radio" name="mPosicao" value="carrossel"><span><i class="fa-solid fa-film"></i> Carrossel</span></label>
+                        <label><input type="radio" name="mPosicao" value="destaque"><span><i class="fa-solid fa-star"></i> Destaque</span></label>
+                    </div>
+                    <span class="ajuda">Destaque = faixa fixa embaixo da TV (só um por vez).</span>
+                </div>
+                <div class="campo" id="mDuracaoCampo"><label for="mDuracao">Tempo na tela (segundos)</label><input class="input" id="mDuracao" type="number" min="3" max="600" placeholder="Padrão"></div>
+            </div>
+            <div class="linha-campos">
+                <div class="campo"><label for="mInicio">Entra no ar em</label><input class="input" id="mInicio" type="datetime-local"><span class="ajuda">Vazio = já está valendo</span></div>
+                <div class="campo"><label for="mFim">Sai do ar em</label><input class="input" id="mFim" type="datetime-local"><span class="ajuda">Vazio = sem data para sair</span></div>
+            </div>
+            <div class="opcao">
+                <div class="opcao-texto"><b>Ativo</b><small>Desligue para pausar sem apagar</small></div>
+                <label class="chave"><input type="checkbox" id="mAtivo"><span></span></label>
+            </div>
+        </div>
+        <div class="modal-rodape">
+            <button class="btn btn-perigo" id="mExcluir" type="button" style="margin-right:auto"><i class="fa-regular fa-trash-can"></i> Excluir</button>
+            <button class="btn" data-fechar type="button">Cancelar</button>
+            <button class="btn btn-prim" id="mSalvar" type="button"><i class="fa-solid fa-check"></i> Salvar</button>
+        </div>
+    </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="/static/alerta.js"></script>
+<script src="/static/admin/admin.js"></script>
+</body>
+</html>

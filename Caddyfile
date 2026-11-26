@@ -1,0 +1,12 @@
+{$DOMINIO} {
+	encode gzip
+	request_body {
+		max_size 2GB
+	}
+	reverse_proxy painel:8000 {
+		transport http {
+			read_timeout 15m
+			write_timeout 15m
+		}
+	}
+}
