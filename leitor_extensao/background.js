@@ -101,9 +101,22 @@ function resolverDepartamento(lido, textos, nome) {
   return acharDepartamento(textos, nome);
 }
 
+// último recurso: 1º texto da conversa que parece um nome
+function nomeDosTextos(textos) {
+  for (const t of textos || []) {
+    const x = (t || "").replace(/\s*\(\+?\d[\d\s()\-]{7,}\)\s*$/, "").trim();
+    if (!x || x === "--" || x.length > 60) continue;
+    if (/^\+?[\d\s()\-]{8,}$/.test(x) || /^\d+$/.test(x) || /^\d{1,2}:\d{2}$/.test(x)) continue;
+    if (/solicitou|atendimento|aguarde|departamento|depto/i.test(x)) continue;
+    if (/^(h[aá]\s|poucos segundos|agora|ontem|hoje)/i.test(x) || /^\d+\s*(min|h|s|dia)/i.test(x)) continue;
+    return x;
+  }
+  return "";
+}
+
 function formatarNome(nome, modo) {
   nome = (nome || "").trim();
-  if (!nome || ["nao", "não", "n", "0", "false"].includes(modo)) return "";
+  if (!nome || modo === "nao") return "";
   if (modo === "primeiro_nome" || modo === "primeiro") {
     const parte = nome.split(" - ").pop().trim() || nome;
     const p = parte.split(/\s+/)[0];
@@ -143,6 +156,7 @@ function montar(dados, cfg) {
     const [nomeFrase, deptoFrase] = lerFraseSolicitacao((item.textos || []).concat([item.nome || ""]));
     let nome = (item.nome || "").trim();
     if (nomeFrase && (!nome || /solicitou/i.test(nome))) nome = nomeFrase;
+    if (!nome) nome = nomeDosTextos(item.textos);
     const depLido = deptoFrase || item.departamento;
     const chave = nome || "#" + i;
     atuais.add(chave);
@@ -196,6 +210,12 @@ async function enviar(corpo, forcar) {
 }
 
 async function processar(dados) {
+  if (dados.aba_pendentes_aberta && dados.diagnostico) {
+    await chrome.storage.local.set({ diagnostico: {
+      em: new Date().toLocaleString("pt-BR"), versao: chrome.runtime.getManifest().version,
+      pendentes_badge: dados.pendentes_badge, itens: dados.itens, blocos: dados.diagnostico } });
+  }
+  delete dados.diagnostico;
   const cfg = await lerConfig();
   await carregarEstado();
   await enviar(montar(dados, cfg), false);
