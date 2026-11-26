@@ -5,3 +5,4 @@ __pycache__/
 leitor_local/perfil_messenger/
 leitor_local/dados/
 leitor_local/.venv/
+leitor_local/instalador_exe/payload/

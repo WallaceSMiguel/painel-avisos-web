@@ -1453,6 +1453,27 @@ def leitor_baixar_instalador():
     return resp
 
 
+LEITOR_EXE = LEITOR_DIR / "dist" / "InstalarLeitorMessenger.exe"
+
+
+@app.route("/admin/leitor/instalador.exe")
+@login_obrigatorio
+def leitor_baixar_exe():
+    """Instalador .exe do leitor com o endereço e o token deste painel no fim do arquivo.
+    O .exe lê esse trecho ao rodar (leitor_local/instalador_exe/main.go)."""
+    import base64
+    if not LEITOR_EXE.exists():
+        return ("O arquivo leitor_local/dist/InstalarLeitorMessenger.exe não está neste servidor. "
+                "Envie a pasta leitor_local junto com o app.py."), 404
+    cfg_json = json.dumps({"url": _endereco_publico(), "token": cfg("leitor_token")})
+    trailer = b"\nLEITORCFG1:" + base64.b64encode(cfg_json.encode("utf-8")) + b":FIM\n"
+    buf = BytesIO(LEITOR_EXE.read_bytes() + trailer)
+    resp = send_file(buf, as_attachment=True, download_name="InstalarLeitorMessenger.exe",
+                     mimetype="application/vnd.microsoft.portable-executable")
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
 CHAVES_EDITAVEIS = {"empresa_titulo", "empresa_subtitulo", "rodape", "tempo_imagem", "mostrar_atendimento",
                     "max_clientes_card", "ocultar_reunioes_passadas",
                     "alerta_ativo", "alerta_card", "alerta_som", "alerta_voz", "alerta_volume",

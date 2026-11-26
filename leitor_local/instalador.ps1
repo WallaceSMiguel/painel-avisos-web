@@ -221,7 +221,7 @@ $py = Achar-Python
 if (-not $py) {
     Aviso "Python não encontrado. Vou instalar agora."
     $py = Instalar-Python
-    if (-not $py) { Falhar "Não consegui instalar o Python. Instale pelo site python.org (marque 'Add python.exe to PATH') e rode o INSTALAR.bat de novo." }
+    if (-not $py) { Falhar "Não consegui instalar o Python. Instale pelo site python.org (marque 'Add python.exe to PATH') e rode o instalador de novo." }
 }
 Ok ("Python: " + (& $py.exe @($py.args) --version))
 
@@ -233,7 +233,7 @@ if (-not (Test-Path $venvPy)) {
     if ($LASTEXITCODE -ne 0 -or -not (Test-Path $venvPy)) { Falhar "Não consegui criar o ambiente do Python em $venv." }
 }
 & $venvPy -m pip install --disable-pip-version-check --upgrade pip playwright | Out-Host
-if ($LASTEXITCODE -ne 0) { Falhar "A instalação do Playwright falhou. Confira a internet e rode o INSTALAR.bat de novo." }
+if ($LASTEXITCODE -ne 0) { Falhar "A instalação do Playwright falhou. Confira a internet e rode o instalador de novo." }
 Ok "Playwright instalado"
 
 # ---------- 3. Chrome ----------
@@ -248,7 +248,7 @@ if ($chrome) {
 } else {
     Aviso "Google Chrome não encontrado. Instalando o navegador reserva do Playwright..."
     & $venvPy -m playwright install chromium | Out-Host
-    Mensagem "O Google Chrome não está instalado neste PC.`n`nO login do Messenger precisa do Chrome. Vou abrir a página de download: instale o Chrome e depois rode o INSTALAR.bat de novo." "Warning" | Out-Null
+    Mensagem "O Google Chrome não está instalado neste PC.`n`nO login do Messenger precisa do Chrome. Vou abrir a página de download: instale o Chrome e depois rode o instalador de novo." "Warning" | Out-Null
     Start-Process "https://www.google.com/chrome/"
 }
 

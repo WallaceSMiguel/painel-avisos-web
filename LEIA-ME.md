@@ -26,10 +26,11 @@ PC do escritório (leitor_local)  ──HTTPS + token──▶  Servidor web  �
 
 ### Instalar o leitor (jeito fácil, Windows)
 
-1. No admin, abra **Atendimento** e clique em **Baixar instalador do leitor**. O `LeitorMessenger.zip` já vem com o endereço e o token do painel.
-2. No PC do escritório, clique com o botão direito no zip e escolha **Extrair tudo**.
-3. Dê dois cliques em **`INSTALAR.bat`**. Se aparecer "O Windows protegeu o computador", clique em **Mais informações** e depois em **Executar assim mesmo**.
-4. Na primeira vez o Chrome abre sozinho: entre no Onvio, abra o Messenger até aparecer a aba **Pendentes** e **feche o Chrome**.
+1. No admin, abra **Atendimento** e clique em **Baixar instalador do leitor (.exe)**. O `InstalarLeitorMessenger.exe` já vem com o endereço e o token do painel.
+2. No PC do escritório, abra o `.exe`. Se aparecer "O Windows protegeu o computador", clique em **Mais informações** e depois em **Executar assim mesmo** (o aviso aparece porque o instalador não tem assinatura digital paga).
+3. Na primeira vez o Chrome abre sozinho: entre no Onvio, abra o Messenger até aparecer a aba **Pendentes** e **feche o Chrome**.
+
+Se o antivírus bloquear o `.exe`, use o link **versão em .zip** logo abaixo do botão: extraia o zip e dê dois cliques em `INSTALAR.bat`. O resultado é o mesmo.
 
 Pronto: em até 30 segundos o card fica **AO VIVO**. O instalador:
 
@@ -41,7 +42,8 @@ Pronto: em até 30 segundos o card fica **AO VIVO**. O instalador:
 
 Para trocar o token, ou atualizar o leitor, é só rodar o `INSTALAR.bat` de novo. Se você rodar o instalador de dentro da pasta antiga (com a pasta `perfil_messenger`), ele reaproveita o login.
 
-> O download do instalador precisa da pasta `leitor_local` no servidor, ao lado do `app.py`.
+> O download do instalador precisa da pasta `leitor_local` no servidor, ao lado do `app.py` (inclusive `leitor_local/dist/InstalarLeitorMessenger.exe`).
+> Se mudar algum arquivo do leitor, gere o `.exe` de novo com `leitor_local/instalador_exe/gerar_exe.sh` (precisa do Go).
 
 ### Instalar à mão
 
