@@ -1,0 +1,27 @@
+﻿COMO INSTALAR O LEITOR DO MESSENGER (PC do escritorio, Windows)
+================================================================
+
+1. No painel web, entre em Admin -> Atendimento e clique em
+   "Baixar instalador do leitor". (Se preferir, copie o token
+   que aparece ali: o instalador vai pedir.)
+
+2. Clique com o botao direito no .zip baixado -> "Extrair tudo".
+
+3. Abra a pasta extraida e de dois cliques em INSTALAR.bat.
+   Se o Windows mostrar "O Windows protegeu o computador",
+   clique em "Mais informacoes" -> "Executar assim mesmo".
+
+4. Espere terminar. Se ele pedir o token, cole e clique OK.
+
+5. Na primeira vez o Chrome abre sozinho: entre no Onvio,
+   abra o Messenger ate aparecer a aba "Pendentes" e FECHE o Chrome.
+
+Pronto. Em ate 30 segundos o card da TV fica "AO VIVO".
+O leitor liga sozinho toda vez que o Windows iniciar.
+
+Atalhos criados na Area de Trabalho:
+  - "Leitor do Messenger - Ligar"        liga o leitor, se ele estiver parado
+  - "Leitor do Messenger - Fazer login"  use quando a TV mostrar "Login necessario"
+
+O leitor fica instalado em  C:\Users\SEU_USUARIO\LeitorMessenger
+Para trocar o token depois, basta rodar o INSTALAR.bat de novo.

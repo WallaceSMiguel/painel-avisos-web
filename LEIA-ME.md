@@ -24,7 +24,28 @@ O login no Onvio precisa de uma pessoa e de um Chrome de verdade. Por isso o **l
 PC do escritório (leitor_local)  ──HTTPS + token──▶  Servidor web  ──▶  TVs
 ```
 
-1. Copie a pasta `leitor_local` para o PC do escritório. Ela substitui a pasta antiga `Avisos`; pode reaproveitar a pasta `perfil_messenger` antiga para não precisar fazer login de novo.
+### Instalar o leitor (jeito fácil, Windows)
+
+1. No admin, abra **Atendimento** e clique em **Baixar instalador do leitor**. O `LeitorMessenger.zip` já vem com o endereço e o token do painel.
+2. No PC do escritório, clique com o botão direito no zip e escolha **Extrair tudo**.
+3. Dê dois cliques em **`INSTALAR.bat`**. Se aparecer "O Windows protegeu o computador", clique em **Mais informações** e depois em **Executar assim mesmo**.
+4. Na primeira vez o Chrome abre sozinho: entre no Onvio, abra o Messenger até aparecer a aba **Pendentes** e **feche o Chrome**.
+
+Pronto: em até 30 segundos o card fica **AO VIVO**. O instalador:
+
+- instala o Python (se faltar) e o Playwright, num ambiente só do leitor;
+- confere o Google Chrome (e instala pelo `winget` se faltar);
+- testa o token no painel e grava no `config.ini` (se o token não vier no zip, ele pergunta numa janela);
+- instala tudo em `C:\Users\SEU_USUARIO\LeitorMessenger`;
+- faz o leitor ligar junto com o Windows e cria dois atalhos na Área de Trabalho: **Leitor do Messenger - Ligar** e **Leitor do Messenger - Fazer login** (para quando a TV mostrar "Login necessário").
+
+Para trocar o token, ou atualizar o leitor, é só rodar o `INSTALAR.bat` de novo. Se você rodar o instalador de dentro da pasta antiga (com a pasta `perfil_messenger`), ele reaproveita o login.
+
+> O download do instalador precisa da pasta `leitor_local` no servidor, ao lado do `app.py`.
+
+### Instalar à mão
+
+1. Copie a pasta `leitor_local` para o PC do escritório. Pode reaproveitar a pasta `perfil_messenger` antiga para não precisar fazer login de novo.
 2. Rode `instalar.bat` (uma vez).
 3. No admin, abra **Atendimento** e copie o **endereço** e o **token** para a seção `[servidor]` do `config.ini`.
 4. Rode `login_messenger.bat` (uma vez ou quando a sessão expirar) e depois `iniciar_leitor.bat`.

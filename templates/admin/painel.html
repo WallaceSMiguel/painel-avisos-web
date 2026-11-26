@@ -279,15 +279,22 @@
                         <button class="btn btn-peq btn-perigo" id="btnNovoToken" type="button"><i class="fa-solid fa-arrows-rotate"></i> Gerar novo token</button>
                     </div>
                     <div>
+                        <a class="btn btn-prim" href="/admin/leitor/instalador.zip" download><i class="fa-solid fa-download"></i> Baixar instalador do leitor</a>
+                        <span class="ajuda" style="display:block;margin-top:6px">O arquivo já vem com o endereço e o token deste painel. Não envie para ninguém de fora.</span>
                         <ol class="passos">
-                            <li>No PC do escritório, abra a pasta <code>leitor_local</code> e edite o <code>config.ini</code>.</li>
-                            <li>Na seção <code>[servidor]</code>, cole o endereço e o token:
-<pre class="bloco" id="iniExemplo">[servidor]
-url   = https://seu-endereco
-token = SEU_TOKEN</pre></li>
-                            <li>Rode <code>login_messenger.bat</code> (uma vez) e depois <code>iniciar_leitor.bat</code>.</li>
+                            <li>No PC do escritório (Windows), clique com o botão direito no <code>LeitorMessenger.zip</code> e escolha <b>Extrair tudo</b>.</li>
+                            <li>Dê dois cliques em <code>INSTALAR.bat</code>. Ele instala o que falta (Python e Playwright), liga o leitor ao painel e faz ele iniciar junto com o Windows.</li>
+                            <li>Na primeira vez o Chrome abre sozinho: entre no Onvio, abra o Messenger até aparecer <b>Pendentes</b> e feche o Chrome.</li>
                             <li>Em até 30 segundos o selo acima fica <b style="color:var(--ok)">AO VIVO</b>.</li>
                         </ol>
+                        <details class="muted" style="font-size:12.5px">
+                            <summary>Configurar à mão (sem o instalador)</summary>
+                            <p>No <code>config.ini</code> da pasta <code>leitor_local</code>, seção <code>[servidor]</code>:</p>
+<pre class="bloco" id="iniExemplo">[servidor]
+url   = https://seu-endereco
+token = SEU_TOKEN</pre>
+                            <p>Depois rode <code>instalar.bat</code>, <code>login_messenger.bat</code> e <code>iniciar_leitor.bat</code>.</p>
+                        </details>
                     </div>
                 </div>
             </div>

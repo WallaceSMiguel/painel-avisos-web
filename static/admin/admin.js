@@ -611,7 +611,7 @@
         carregadores.atendimento();
     });
     $("#btnNovoToken").addEventListener("click", function () {
-        if (!window.confirm("Gerar um novo token? O leitor do escritório vai parar até você colar o novo token no config.ini.")) return;
+        if (!window.confirm("Gerar um novo token? O leitor do escritório vai parar até você rodar o INSTALAR.bat de novo (ou colar o novo token no config.ini).")) return;
         api("POST", "/admin/api/config/leitor-token", {}).then(function (d) {
             tokenVisivel = true; renderAtendimento(d); toast("Novo token gerado");
         }).catch(function (e) { toast(e.message, true); });
