@@ -103,3 +103,9 @@ static/                logo, ícones, CSS e JS do admin
 leitor_local/          vai para o PC do escritório (Messenger)
 dados/                 criado automaticamente: banco, mídias, agenda
 ```
+
+## Hospedar no PythonAnywhere
+
+O PythonAnywhere não mantém threads de fundo nem tem CPU para converter vídeos. Por isso o WSGI de lá usa `CONVERTER_VIDEOS=nao`: o vídeo é publicado **como foi enviado**, na qualidade original, e a TV toca direto no navegador. Envie em **MP4 (H.264)** ou WEBM. Para o vídeo começar a tocar mais rápido, exporte com a opção "fast start" / "otimizado para web".
+
+Para atualizar: `cd ~/painel-avisos-web && git pull` num console Bash e depois **Reload** na aba Web.

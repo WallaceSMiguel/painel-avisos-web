@@ -79,6 +79,10 @@ MAX_UPLOAD_MB = int(os.environ.get("MAX_UPLOAD_MB", "2048"))
 ATENDIMENTO_VALIDADE = 90          # s sem notícia do leitor = leitor parado
 FFMPEG = shutil.which("ffmpeg")
 FFPROBE = shutil.which("ffprobe")
+# CONVERTER_VIDEOS=nao: publica o vídeo como foi enviado, sem fila nem FFmpeg
+# (para hospedagens sem threads de fundo / com pouca CPU, ex.: PythonAnywhere).
+CONVERTER_VIDEOS = os.environ.get("CONVERTER_VIDEOS", "sim").lower() in {"sim", "1", "true"}
+EXT_VIDEO_DIRETO = {".mp4", ".m4v", ".webm", ".mov"}
 
 EXT_IMAGEM = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"}
 EXT_VIDEO = {".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi", ".wmv", ".mpg", ".mpeg", ".3gp"}
@@ -560,13 +564,16 @@ def converter_video(aviso_id, origem: Path):
         saida_tmp = TMP_DIR / (nome + ".parcial.mp4")
         destino = MIDIA_DIR / nome
 
-        if not FFMPEG:
-            # sem FFmpeg no servidor: usa o arquivo como veio
-            if origem.suffix.lower() not in {".mp4", ".m4v"}:
-                raise RuntimeError("FFmpeg não está instalado no servidor: envie o vídeo em MP4")
+        if not FFMPEG or not CONVERTER_VIDEOS:
+            # sem conversão: usa o arquivo como veio (a TV toca direto)
+            ext = origem.suffix.lower()
+            if ext not in EXT_VIDEO_DIRETO:
+                raise RuntimeError("Envie o vídeo em MP4 (H.264) ou WEBM: este servidor não converte vídeos")
+            nome = uuid.uuid4().hex + (".mp4" if ext == ".m4v" else ext)
+            destino = MIDIA_DIR / nome
             shutil.move(str(origem), destino)
-            alerta = "" if moov_no_inicio(destino) else \
-                "Vídeo sem 'faststart': pode demorar a tocar na TV (instale o FFmpeg no servidor)."
+            alerta = "" if destino.suffix != ".mp4" or moov_no_inicio(destino) else \
+                "Vídeo sem 'faststart': pode demorar um pouco para começar a tocar na TV."
             _atualizar_aviso(con, aviso_id, arquivo=nome, status="pronto", progresso=100,
                              erro=alerta, tamanho=destino.stat().st_size)
             gerar_miniatura(aviso_id, destino, "video")
@@ -658,6 +665,17 @@ def garantir_trabalhador():
     global _trabalhador_iniciado
     with _trava_trabalhador:
         if _trabalhador_iniciado:
+            return
+        if not CONVERTER_VIDEOS:
+            _trabalhador_iniciado = True
+            con = db_avulso()
+            pendentes = [r["id"] for r in con.execute(
+                "SELECT id FROM avisos WHERE status IN ('fila','processando') AND tipo='video' ORDER BY id")]
+            con.close()
+            for aviso_id in pendentes:
+                pendente = next(TMP_DIR.glob(f"envio_{aviso_id}_*"), None)
+                if pendente:
+                    converter_video(aviso_id, pendente)
             return
         threading.Thread(target=trabalhador_videos, daemon=True, name="videos").start()
         _trabalhador_iniciado = True
@@ -1164,8 +1182,12 @@ def api_avisos_upload():
     else:
         _atualizar_aviso(con, aviso_id, tamanho=tamanho)
         garantir_trabalhador()
-        FILA_VIDEOS.put((aviso_id, str(temp)))
-        registrar(f"Enviou o vídeo '{nome_original}' (convertendo para a TV)")
+        if CONVERTER_VIDEOS and FFMPEG:
+            FILA_VIDEOS.put((aviso_id, str(temp)))
+            registrar(f"Enviou o vídeo '{nome_original}' (convertendo para a TV)")
+        else:
+            converter_video(aviso_id, temp)   # publica na hora, sem conversão
+            registrar(f"Publicou o vídeo '{nome_original}'")
 
     return jsonify(aviso_dict(con.execute("SELECT * FROM avisos WHERE id=?", (aviso_id,)).fetchone()))
 
