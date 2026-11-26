@@ -24,7 +24,31 @@ O login no Onvio precisa de uma pessoa e de um Chrome de verdade. Por isso o **l
 PC do escritório (leitor_local)  ──HTTPS + token──▶  Servidor web  ──▶  TVs
 ```
 
-### Instalar o leitor (jeito fácil, Windows)
+### Opção 1 (mais fácil): extensão do Chrome
+
+O atendente faz o login no Onvio **como sempre faz** e deixa o Messenger aberto no Chrome. A extensão lê a lista de pendentes na própria tela e envia para o painel. Não precisa instalar Python nem rodar programas.
+
+1. No admin, abra **Atendimento** e clique em **Baixar extensão do Chrome**. O zip já vem com o endereço e o token do painel.
+2. Extraia o zip numa pasta que não vai ser apagada (por exemplo, `Documentos\LeitorMessengerChrome`).
+3. No Chrome, abra `chrome://extensions`, ligue **Modo do desenvolvedor** e clique em **Carregar sem compactação**. Escolha a pasta extraída.
+4. Faça login no Onvio e abra o Messenger. Em até 30 segundos o card fica **AO VIVO**.
+
+Como funciona:
+
+- a extensão só **lê** a tela: não clica, não troca de aba e não responde nada;
+- os nomes aparecem quando a aba **Pendentes** está selecionada. Em outra aba, vai só a quantidade e a TV mantém os últimos nomes;
+- ela envia quando a lista muda e a cada 30 segundos, mesmo com a aba em segundo plano;
+- se o Messenger for fechado, a TV mostra "Abra o Messenger (Onvio) no Chrome do atendimento";
+- instale em **um Chrome só** (por exemplo, o da recepção). Dois Chromes enviando ao mesmo tempo fazem a TV alternar entre as listas;
+- clicando no ícone da extensão dá para ver o último envio e trocar o token.
+
+O código fica em `leitor_extensao/`.
+
+### Opção 2: programa no PC do escritório (Windows)
+
+Use esta opção quando o Messenger precisa aparecer na TV mesmo sem ninguém com o Chrome aberto.
+
+
 
 1. No admin, abra **Atendimento** e clique em **Baixar instalador do leitor (.exe)**. O `InstalarLeitorMessenger.exe` já vem com o endereço e o token do painel.
 2. No PC do escritório, abra o `.exe`. Se aparecer "O Windows protegeu o computador", clique em **Mais informações** e depois em **Executar assim mesmo** (o aviso aparece porque o instalador não tem assinatura digital paga).

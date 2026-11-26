@@ -1474,6 +1474,41 @@ def leitor_baixar_exe():
     return resp
 
 
+EXTENSAO_DIR = BASE_DIR / "leitor_extensao"
+EXTENSAO_ARQUIVOS = ("manifest.json", "background.js", "conteudo.js", "opcoes.html", "opcoes.js",
+                     "config.js", "COMO INSTALAR.txt")
+
+
+@app.route("/admin/leitor/extensao.zip")
+@login_obrigatorio
+def leitor_baixar_extensao():
+    """Extensão do Chrome que lê o Messenger no navegador do atendente,
+    já com o endereço e o token deste painel."""
+    import zipfile
+    if not (EXTENSAO_DIR / "manifest.json").exists():
+        return "A pasta leitor_extensao não está neste servidor. Envie-a junto com o app.py.", 404
+    url, token = _endereco_publico(), cfg("leitor_token")
+    buf = BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for nome in EXTENSAO_ARQUIVOS:
+            arq = EXTENSAO_DIR / nome
+            if not arq.exists():
+                continue
+            destino = "LeitorMessengerChrome/" + nome
+            if nome == "config.js":
+                z.writestr(destino, "self.PAINEL_CONFIG = " + json.dumps({"url": url, "token": token}) + ";\n")
+            elif nome == "manifest.json":
+                manifesto = json.loads(arq.read_text(encoding="utf-8"))
+                manifesto["host_permissions"] = ["https://app.gestta.com.br/*", url + "/*"]
+                z.writestr(destino, json.dumps(manifesto, ensure_ascii=False, indent=2))
+            else:
+                z.write(arq, destino)
+    buf.seek(0)
+    resp = send_file(buf, as_attachment=True, download_name="LeitorMessengerChrome.zip", mimetype="application/zip")
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
 CHAVES_EDITAVEIS = {"empresa_titulo", "empresa_subtitulo", "rodape", "tempo_imagem", "mostrar_atendimento",
                     "max_clientes_card", "ocultar_reunioes_passadas",
                     "alerta_ativo", "alerta_card", "alerta_som", "alerta_voz", "alerta_volume",

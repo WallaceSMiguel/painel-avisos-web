@@ -1,0 +1,28 @@
+EXTENSÃO DO CHROME: LEITOR DO MESSENGER
+=======================================
+Com a extensão, o atendente só faz o login no Onvio como sempre e deixa
+o Messenger aberto no Chrome. Os atendimentos pendentes aparecem na TV.
+Não precisa instalar Python nem rodar nada.
+
+INSTALAR (uma vez, no Chrome do atendente)
+1. Extraia este .zip numa pasta que NÃO vai ser apagada,
+   por exemplo Documentos\LeitorMessengerChrome.
+2. No Chrome, abra o endereço:  chrome://extensions
+3. Ligue "Modo do desenvolvedor" (canto superior direito).
+4. Clique em "Carregar sem compactação" e escolha a pasta extraída.
+5. Se o zip veio do botão do painel, já está tudo configurado.
+   Se abrir uma tela pedindo o token, cole o token de
+   Admin -> Atendimento e clique em Salvar.
+
+USAR
+- Faça login no Onvio e abra o Messenger, como sempre.
+- Deixe a aba do Messenger aberta (pode ficar em segundo plano).
+- Os nomes aparecem quando a aba "Pendentes" está selecionada.
+  Em outra aba, a TV mostra a quantidade e mantém os últimos nomes.
+- Clicando no ícone da extensão você vê o último envio para o painel.
+
+IMPORTANTE
+- Instale em UM Chrome só (ex.: o da recepção). Dois Chromes enviando
+  ao mesmo tempo fazem a TV alternar entre as listas.
+- Se o Chrome for fechado, a TV mostra o aviso para abrir o Messenger.
+- A extensão só lê a tela: não clica, não responde e não muda nada no Messenger.

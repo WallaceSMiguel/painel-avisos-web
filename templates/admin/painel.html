@@ -267,7 +267,7 @@
             <div class="card mt">
                 <div class="card-cab">
                     <div class="icone-cab"><i class="fa-solid fa-plug"></i></div>
-                    <div><h2>Ligar o leitor do Messenger a este servidor</h2><div class="sub">O leitor continua no PC do escritório (é ele que faz o login no Onvio) e envia os dados para cá</div></div>
+                    <div><h2>Ligar o leitor do Messenger a este servidor</h2><div class="sub">O leitor (extensão do Chrome ou programa no PC do escritório) lê o Messenger e envia os dados para cá</div></div>
                 </div>
                 <div class="card-corpo grade grade-2b">
                     <div>
@@ -279,15 +279,19 @@
                         <button class="btn btn-peq btn-perigo" id="btnNovoToken" type="button"><i class="fa-solid fa-arrows-rotate"></i> Gerar novo token</button>
                     </div>
                     <div>
-                        <a class="btn btn-prim" href="/admin/leitor/instalador.exe" download><i class="fa-solid fa-download"></i> Baixar instalador do leitor (.exe)</a>
-                        <span class="ajuda" style="display:block;margin-top:6px">O instalador já vem com o endereço e o token deste painel. Não envie para ninguém de fora.</span>
+                        <h3 style="font-size:15px;margin:0 0 6px">Opção 1 (mais fácil): extensão do Chrome</h3>
+                        <p class="muted" style="font-size:12.5px;margin:0 0 8px">O atendente faz o login no Onvio como sempre e deixa o Messenger aberto. Não precisa instalar nada no Windows.</p>
+                        <a class="btn btn-prim" href="/admin/leitor/extensao.zip" download><i class="fa-brands fa-chrome"></i> Baixar extensão do Chrome</a>
                         <ol class="passos">
-                            <li>No PC do escritório (Windows), abra o <code>InstalarLeitorMessenger.exe</code> baixado.</li>
-                            <li>Se aparecer "O Windows protegeu o computador", clique em <b>Mais informações</b> e depois em <b>Executar assim mesmo</b>.</li>
-                            <li>Espere terminar. Na primeira vez o Chrome abre sozinho: entre no Onvio, abra o Messenger até aparecer <b>Pendentes</b> e feche o Chrome.</li>
+                            <li>Extraia o <code>LeitorMessengerChrome.zip</code> numa pasta que não vai ser apagada (ex.: Documentos).</li>
+                            <li>No Chrome, abra <code>chrome://extensions</code>, ligue <b>Modo do desenvolvedor</b> e clique em <b>Carregar sem compactação</b>. Escolha a pasta extraída.</li>
+                            <li>Faça login no Onvio e abra o Messenger, como sempre. Deixe a aba aberta.</li>
                             <li>Em até 30 segundos o selo acima fica <b style="color:var(--ok)">AO VIVO</b>.</li>
                         </ol>
-                        <p class="muted" style="font-size:12.5px">Se o antivírus bloquear o .exe, use a <a href="/admin/leitor/instalador.zip" download>versão em .zip</a>: extraia e dê dois cliques em <code>INSTALAR.bat</code>.</p>
+                        <p class="muted" style="font-size:12.5px">Instale em um Chrome só (ex.: o da recepção). Os nomes aparecem quando a aba <b>Pendentes</b> está selecionada.</p>
+                        <h3 style="font-size:15px;margin:16px 0 6px">Opção 2: programa no PC (funciona sem ninguém logado no Chrome)</h3>
+                        <a class="btn" href="/admin/leitor/instalador.exe" download><i class="fa-solid fa-download"></i> Baixar instalador do leitor (.exe)</a>
+                        <p class="muted" style="font-size:12.5px">Abra o .exe no PC do escritório (se o Windows avisar: <b>Mais informações</b> → <b>Executar assim mesmo</b>). Se o antivírus bloquear, use a <a href="/admin/leitor/instalador.zip" download>versão em .zip</a>.</p>
                         <details class="muted" style="font-size:12.5px">
                             <summary>Configurar à mão (sem o instalador)</summary>
                             <p>No <code>config.ini</code> da pasta <code>leitor_local</code>, seção <code>[servidor]</code>:</p>
